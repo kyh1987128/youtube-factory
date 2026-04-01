@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.env
+client_secrets.json
+token.json
+output/
+*.mp4
+*.mp3
+*.wav
+.venv/
+venv/

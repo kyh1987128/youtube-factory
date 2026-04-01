@@ -1,0 +1,87 @@
+# youtube-factory 설정 파일
+pipeline:
+  output_dir: "./output"
+  stages:
+    - topic
+    - script
+    - voice
+    - visuals
+    - assembly
+    - thumbnail
+    - export              # CapCut용 소재 내보내기
+    # - upload            # YouTube OAuth 설정 후 활성화
+
+topic:
+  category: "tech"
+  language: "ko"
+  preferred_categories: ["tech", "finance", "education"]
+  model: "claude-sonnet-4-20250514"
+  max_candidates: 10
+  collector_timeout_seconds: 30
+  collectors:
+    youtube_trending:
+      enabled: true
+      regions: ["KR", "US"]
+      max_results: 30
+    google_trends:
+      enabled: true
+      regions: ["south_korea", "united_states"]
+    naver_trends:
+      enabled: true
+    reddit_trends:
+      enabled: true
+      subreddits: []  # 빈 값 = r/all + 카테고리별 자동
+
+script:
+  model: "claude-sonnet-4-20250514"
+  max_tokens: 4096
+  language: "ko"
+  target_duration_seconds: 480
+
+voice:
+  voice_name: "ko-KR-SunHiNeural"
+  rate: "+0%"
+  pitch: "+0Hz"
+
+visuals:
+  method: "gemini"          # "gemini" 또는 "placeholder"
+  width: 1920
+  height: 1080
+  gemini_model: "gemini-2.0-flash-exp"
+  style: "cinematic, high quality, 16:9 aspect ratio, vibrant colors"
+  delay_seconds: 2          # API 속도 제한 방지 대기시간
+
+assembly:
+  fps: 30
+  width: 1920
+  height: 1080
+  # Remotion 렌더링 설정
+  codec: "h264"
+  render_concurrency: 2
+  render_timeout: 600       # 초
+  # 자막
+  subtitle_enabled: true
+  subtitle_font_size: 48
+  subtitle_font: "Malgun Gothic, sans-serif"
+  subtitle_position: "bottom"  # bottom, center, top
+  # 장면 전환
+  transition_type: "fade"      # fade, slide, wipe, none
+  transition_duration: 0.5     # 초
+  # 켄 번즈 (이미지 줌 효과)
+  ken_burns: true
+  ken_burns_range: [1.0, 1.12]
+  # BGM (파일 경로 지정 시 활성화)
+  bgm_file: ""
+  bgm_volume: 0.3
+  bgm_ducking_volume: 0.1
+
+thumbnail:
+  width: 1280
+  height: 720
+  font_size: 72
+  font_path: "C:/Windows/Fonts/malgun.ttf"
+
+upload:
+  category_id: "28"
+  privacy_status: "private"
+  client_secrets_file: "client_secrets.json"
