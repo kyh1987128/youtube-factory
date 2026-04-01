@@ -76,28 +76,17 @@ cd ..
 copy .env.example .env
 ```
 
-`.env` 파일을 열어서 API 키를 입력합니다:
+`.env` 파일을 열어서 Gemini API 키를 입력합니다:
 
 ```env
-# Claude는 Claude Code CLI(Max 요금제)로 실행 - API 키 불필요
-
-# ===== 필수 =====
+# 유일한 필수 키 - Gemini 이미지 생성용
 GOOGLE_API_KEY=AIza여기에입력
-
-# ===== 권장 (주제 수집 품질 향상) =====
-YOUTUBE_API_KEY=AIza여기에입력
-
-# ===== 선택 (없으면 자동 스킵) =====
-NAVER_CLIENT_ID=여기에입력
-NAVER_CLIENT_SECRET=여기에입력
-REDDIT_CLIENT_ID=여기에입력
-REDDIT_CLIENT_SECRET=여기에입력
-REDDIT_USER_AGENT=youtube-factory/0.1
 ```
 
 ### Claude Code 로그인 (Max 요금제)
 
-Claude는 API 키가 아닌 Claude Code CLI를 통해 Max 요금제 안에서 실행됩니다.
+Claude는 API 키 없이 Claude Code CLI를 통해 Max 요금제 안에서 실행됩니다.
+주제 조사(웹 검색), 스크립트 생성 모두 Claude Code가 처리합니다.
 
 ```bash
 # Claude Code 설치 (이미 설치되어 있으면 건너뛰기)
@@ -110,14 +99,11 @@ claude login
 claude --version
 ```
 
-### API 키 발급 방법
+### API 키 발급
 
 | 키 | 발급처 | 용도 |
 |----|--------|------|
-| `GOOGLE_API_KEY` | https://aistudio.google.com/apikey | Gemini 이미지 생성 |
-| `YOUTUBE_API_KEY` | Google Cloud Console → APIs → YouTube Data API v3 활성화 → 사용자 인증정보 | 유튜브 트렌딩 수집 |
-| `NAVER_CLIENT_ID/SECRET` | https://developers.naver.com/ → 애플리케이션 등록 → 검색 API + DataLab API | 네이버 트렌드 수집 |
-| `REDDIT_CLIENT_ID/SECRET` | https://www.reddit.com/prefs/apps → create app → script 유형 | 레딧 트렌드 수집 |
+| `GOOGLE_API_KEY` | https://aistudio.google.com/apikey | Gemini 이미지 생성 (유일한 필수 키) |
 
 ---
 

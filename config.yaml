@@ -15,26 +15,9 @@ topic:
   category: "tech"
   language: "ko"
   preferred_categories: ["tech", "finance", "education"]
-  model: "claude-sonnet-4-20250514"
-  max_candidates: 10
-  collector_timeout_seconds: 30
-  collectors:
-    youtube_trending:
-      enabled: true
-      regions: ["KR", "US"]
-      max_results: 30
-    google_trends:
-      enabled: true
-      regions: ["south_korea", "united_states"]
-    naver_trends:
-      enabled: true
-    reddit_trends:
-      enabled: true
-      subreddits: []  # 빈 값 = r/all + 카테고리별 자동
+  # Claude Code가 웹 검색으로 직접 트렌딩 조사 (API 키 불필요)
 
 script:
-  model: "claude-sonnet-4-20250514"
-  max_tokens: 4096
   language: "ko"
   target_duration_seconds: 480
 

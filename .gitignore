@@ -15,3 +15,5 @@ output/
 *.wav
 .venv/
 venv/
+node_modules/
+.claude/
