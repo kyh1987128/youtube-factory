@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "AI 기반 유튜브 콘텐츠 자동 생산 파이프라인"
 requires-python = ">=3.11"
 dependencies = [
-    "anthropic>=0.40.0",
+    # anthropic SDK 제거 - Claude Code CLI(Max 요금제)로 대체
     "edge-tts>=6.1.0",
     "Pillow>=10.0.0",
     # moviepy 제거 - Remotion으로 영상 렌더링

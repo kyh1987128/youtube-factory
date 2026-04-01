@@ -3,8 +3,7 @@ import json
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import anthropic
-
+from youtube_factory.claude_cli import ask_claude
 from youtube_factory.collectors import BaseCollector
 from youtube_factory.collectors.google_trends import GoogleTrendsCollector
 from youtube_factory.collectors.naver_trends import NaverTrendsCollector
@@ -21,6 +20,13 @@ COLLECTOR_REGISTRY: dict[str, type[BaseCollector]] = {
     "naver_trends": NaverTrendsCollector,
     "reddit_trends": RedditTrendsCollector,
 }
+
+
+def _parse_json(text: str) -> dict | list:
+    """Claude 응답에서 JSON 추출."""
+    if "```" in text:
+        text = text.split("```json")[-1].split("```")[0] if "```json" in text else text.split("```")[1].split("```")[0]
+    return json.loads(text.strip())
 
 
 class TopicStage:
@@ -53,11 +59,10 @@ class TopicStage:
         collectors_config = self.config.get("collectors", {})
         timeout = self.config.get("collector_timeout_seconds", 30)
 
-        # 활성 수집기 인스턴스 생성
         active: list[BaseCollector] = []
         for name, cls in COLLECTOR_REGISTRY.items():
             col_cfg = collectors_config.get(name, {})
-            if col_cfg.get("enabled", True):  # 기본 활성
+            if col_cfg.get("enabled", True):
                 active.append(cls(col_cfg))
 
         if not active:
@@ -84,12 +89,9 @@ class TopicStage:
 
     def _select_with_claude(self, ctx: PipelineContext, top_topics) -> PipelineContext:
         """Claude에게 상위 후보를 보내고 최적 주제 선정."""
-        client = anthropic.Anthropic()
         category = self.config.get("category", "tech")
         language = self.config.get("language", "ko")
-        model = self.config.get("model", "claude-sonnet-4-20250514")
 
-        # 후보 요약 생성
         candidates = []
         for t in top_topics:
             candidates.append({
@@ -123,16 +125,9 @@ class TopicStage:
             f'"reasoning": "이 주제를 선택한 이유"}}'
         )
 
-        resp = client.messages.create(
-            model=model,
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}],
-        )
-
-        text = resp.content[0].text
-        if "```" in text:
-            text = text.split("```json")[-1].split("```")[0] if "```json" in text else text.split("```")[1].split("```")[0]
-        data = json.loads(text.strip())
+        log.info("Claude에게 주제 선정 요청 중...")
+        text = ask_claude(prompt, timeout=120)
+        data = _parse_json(text)
 
         ctx.topic = data["topic"]
         ctx.title = data["title"]
@@ -144,30 +139,21 @@ class TopicStage:
         return ctx
 
     def _fallback_claude_only(self, ctx: PipelineContext) -> PipelineContext:
-        """수집 실패 시 Claude 단독으로 주제 생성 (기존 방식)."""
-        client = anthropic.Anthropic()
+        """수집 실패 시 Claude 단독으로 주제 생성."""
         category = self.config.get("category", "tech")
         language = self.config.get("language", "ko")
 
-        resp = client.messages.create(
-            model=self.config.get("model", "claude-sonnet-4-20250514"),
-            max_tokens=1024,
-            messages=[{
-                "role": "user",
-                "content": (
-                    f"유튜브 영상으로 만들기 좋은 주제를 하나 제안해줘.\n"
-                    f"카테고리: {category}\n언어: {language}\n\n"
-                    f"반드시 아래 JSON 형식으로만 응답해:\n"
-                    f'{{"topic": "주제 설명", "title": "영상 제목", '
-                    f'"description": "영상 설명 (2-3문장)", "tags": ["태그1", "태그2", "태그3"]}}'
-                ),
-            }],
+        prompt = (
+            f"유튜브 영상으로 만들기 좋은 주제를 하나 제안해줘.\n"
+            f"카테고리: {category}\n언어: {language}\n\n"
+            f"반드시 아래 JSON 형식으로만 응답해:\n"
+            f'{{"topic": "주제 설명", "title": "영상 제목", '
+            f'"description": "영상 설명 (2-3문장)", "tags": ["태그1", "태그2", "태그3"]}}'
         )
 
-        text = resp.content[0].text
-        if "```" in text:
-            text = text.split("```json")[-1].split("```")[0] if "```json" in text else text.split("```")[1].split("```")[0]
-        data = json.loads(text.strip())
+        log.info("Claude에게 주제 생성 요청 중...")
+        text = ask_claude(prompt, timeout=120)
+        data = _parse_json(text)
 
         ctx.topic = data["topic"]
         ctx.title = data["title"]
