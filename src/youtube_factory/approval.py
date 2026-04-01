@@ -89,6 +89,65 @@ def _edit_topic(ctx: PipelineContext) -> PipelineContext:
     return ctx
 
 
+def approve_adapt(ctx: PipelineContext) -> PipelineContext:
+    """변형 스크립트 승인 게이트 (cross-lang, platform, format-cross 등)."""
+    while True:
+        print(f"\n{'='*60}")
+        print(f"{BOLD}{CYAN}  🔄 변형 스크립트 승인 요청{RESET}")
+        print(f"{'='*60}")
+        print(f"\n  {BOLD}모드:{RESET}    {ctx.mode}")
+        print(f"  {BOLD}제목:{RESET}    {ctx.title}")
+        print(f"  {BOLD}설명:{RESET}    {ctx.description}")
+        print(f"  {BOLD}태그:{RESET}    {', '.join(ctx.tags)}")
+
+        if ctx.source_urls:
+            print(f"  {BOLD}원본:{RESET}    {ctx.source_urls[0]}")
+
+        # 변형 스크립트 미리보기 (첫 500자)
+        if ctx.adapted_script:
+            preview = ctx.adapted_script
+            if "---" in preview:
+                preview = preview.split("---", 1)[1]
+            preview = preview.strip()[:500]
+            print(f"\n  {BOLD}스크립트 미리보기:{RESET}")
+            for line in preview.split("\n"):
+                print(f"    {DIM}{line}{RESET}")
+            if len(ctx.adapted_script) > 500:
+                print(f"    {DIM}... (총 {len(ctx.adapted_script)}자){RESET}")
+
+        print(f"\n{'─'*60}")
+        print(f"  {GREEN}[y] 승인{RESET} - 이 스크립트로 영상 제작 진행")
+        print(f"  {YELLOW}[r] 재변형{RESET} - 다시 변형하기")
+        print(f"  {CYAN}[e] 수정{RESET} - 제목/설명 수정")
+        print(f"  {RED}[q] 중단{RESET} - 파이프라인 중단")
+        print(f"{'─'*60}")
+
+        choice = input(f"\n  선택: ").strip().lower()
+
+        if choice in ("y", "yes", ""):
+            log.info("변형 스크립트 승인됨")
+            print(f"\n  {GREEN}✓ 승인 완료 - 영상 제작을 시작합니다{RESET}\n")
+            return ctx
+
+        elif choice in ("r", "retry"):
+            print(f"\n  {YELLOW}↻ 다시 변형합니다...{RESET}\n")
+            from youtube_factory.stages.adapt import AdaptStage
+            stage = AdaptStage({})
+            ctx = stage.run(ctx)
+            continue
+
+        elif choice in ("e", "edit"):
+            ctx = _edit_topic(ctx)
+            continue
+
+        elif choice in ("q", "quit"):
+            print(f"\n  {RED}✗ 파이프라인을 중단합니다{RESET}\n")
+            sys.exit(0)
+
+        else:
+            print(f"  {DIM}y/r/e/q 중 선택해주세요{RESET}")
+
+
 def approve_final(ctx: PipelineContext) -> PipelineContext:
     """최종 영상 렌더링 후 승인 게이트.
 

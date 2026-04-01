@@ -4,33 +4,6 @@ from pathlib import Path
 
 
 @dataclass
-class TrendingItem:
-    """수집된 트렌딩 항목."""
-    title: str
-    source: str          # "youtube", "google_trends", "naver", "reddit"
-    category: str = ""   # "tech", "finance", "health" 등
-    score_raw: float = 0.0
-    url: str = ""
-    view_count: int = 0
-    like_count: int = 0
-    comment_count: int = 0
-    trend_velocity: float = 0.0
-    region: str = ""     # "KR", "US" 등
-    metadata: dict = field(default_factory=dict)
-
-
-@dataclass
-class ScoredTopic:
-    """점수가 매겨진 주제 후보."""
-    title: str
-    category: str
-    final_score: float
-    sources: list[str] = field(default_factory=list)
-    source_count: int = 0
-    items: list[TrendingItem] = field(default_factory=list)
-
-
-@dataclass
 class Scene:
     """스크립트의 개별 장면."""
     index: int
@@ -46,21 +19,38 @@ class PipelineContext:
     """스테이지 간 전달되는 파이프라인 컨텍스트."""
     work_dir: Path = field(default_factory=lambda: Path("./output"))
 
-    # Stage 1: topic
+    # 모드 정보
+    mode: str = "trending"
+    source_urls: list[str] = field(default_factory=list)
+    target_language: str = "ko"
+    target_category: str = ""
+    platform: str = ""          # platform 모드용 (reddit/tiktok/news)
+    direction: str = ""         # short 모드용 (long2short/short2long)
+
+    # Stage: topic
     topic: str = ""
     title: str = ""
     description: str = ""
     tags: list[str] = field(default_factory=list)
 
-    # Stage 2: script
+    # Stage: transcript (대본 추출)
+    source_transcripts: list[str] = field(default_factory=list)
+
+    # Stage: analyze (분석 결과)
+    source_analysis: str = ""
+
+    # Stage: adapt (변형된 스크립트)
+    adapted_script: str = ""
+
+    # Stage: script (장면 분할)
     scenes: list[Scene] = field(default_factory=list)
 
-    # Stage 5: assembly
+    # Stage: assembly
     video_path: Path | None = None
 
-    # Stage 6: thumbnail
+    # Stage: thumbnail
     thumbnail_path: Path | None = None
 
-    # Stage 7: upload
+    # Stage: upload
     video_id: str = ""
     video_url: str = ""

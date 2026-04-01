@@ -1,6 +1,7 @@
 # youtube-factory 설정 파일
 pipeline:
   output_dir: "./output"
+  # 기본 모드(trending)의 스테이지. --mode 지정 시 자동 결정됨.
   stages:
     - topic
     - script
@@ -8,8 +9,8 @@ pipeline:
     - visuals
     - assembly
     - thumbnail
-    - export              # CapCut용 소재 내보내기
-    # - upload            # YouTube OAuth 설정 후 활성화
+    - export
+    # - upload
 
 topic:
   category: "tech"
